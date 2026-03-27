@@ -1,0 +1,57 @@
+services:
+  medtracker-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "gui/app.py"]
+    environment:
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7860
+      - MQTT_HOST=mosquitto-broker
+      - MQTT_PORT=1883
+      - MODEL_PATH=../models/model.joblib
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./:/app
+    # depends_on:
+    #   - mosquitto-broker
+
+  medtracker-train:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["python", "process_rssi_data.py"]
+    volumes:
+      - ./:/app
+    # depends_on:
+    #   - mosquitto-broker
+
+  medtracker-replay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["python", "demo_replay.py"]
+    environment:
+      - MQTT_HOST=mosquitto-broker
+      - MQTT_PORT=1883
+    volumes:
+      - ./:/app
+    # depends_on:
+    #   - mosquitto-broker
+
+  ## If needed, you can uncomment the following section to include the MQTT broker. Make sure to adjust the configuration.
+  # mosquitto-broker:
+  #   container_name: mosquitto
+  #   image: eclipse-mosquitto:latest
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 256M
+  #   ports:
+  #     - "1883:1883"
+  #     - "9001:9001"
+  #   volumes:
+  #     - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+  #     - ./mosquitto/data:/mosquitto/data
+  #     - ./mosquitto/log:/mosquitto/log

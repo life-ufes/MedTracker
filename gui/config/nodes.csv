@@ -1,0 +1,8 @@
+id,name,location,floor,antenna_gain
+esp32_s3_1,esp32_s3_1,corredor 3 (final),3,0
+esp32_s3_2,esp32_s3_2,lprm,3,0
+esp32_s3_3,esp32_s3_3,erus,3,0
+esp32_s3_4,esp32_s3_4,escada,3,0
+esp32_s3_5,esp32_s3_5,corredor 2 (inicio),3,0
+esp32_s3_6,esp32_s3_6,life,3,0
+esp32_s3_extra_1,esp32_s3_extra_1,room15,3,0
