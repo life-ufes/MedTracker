@@ -11,9 +11,10 @@
 
 ## 📖 About
 
-MedTrack is a real-time localization system designed for indoor healthcare environments. It uses **Bluetooth Low Energy (BLE)** tags and **ESP32** scanning nodes to detect assets and estimate their location based on **RSSI filtering techniques** such as average filtering.
+MedTracker is a real-time localization system for indoor localization on healthcare environments. It uses **Bluetooth Low Energy (BLE)** tags and **ESP32** scanning nodes to detect assets and estimate locations from RSSI data.
 
 The system provides a lightweight and low-cost infrastructure for monitoring medical equipment in real time.
+The project supports a **containerized workflow with Docker Compose** for running the live dashboard, training/processing RSSI data, and replaying demo MQTT logs.
 
 ---
 
@@ -23,57 +24,118 @@ The system is composed of:
 
 * **BLE Tags** — attached to assets and broadcasting signals
 * **ESP32 Nodes** — fixed scanners collecting RSSI values
-* **Server** — processes signals and estimates location
-* **Dashboard** — visualizes detected tags and locations
+* **MQTT Broker** — transports RSSI events
+* **Processing/Training Service** — processes RSSI and trains models
+* **Dashboard Service** — visualizes detected tags and estimated locations
 
-```
-BLE Tags → ESP32 Nodes → Server → Dashboard
+```text
+BLE Tags -> ESP32 Nodes -> MQTT Broker -> Processing -> Dashboard
 ```
 
 ---
 
 ## ⚙️ How It Works
 
-1. BLE tags periodically broadcast advertisement packets
-2. ESP32 nodes capture signals and measure RSSI
-3. RSSI values are filtered (e.g., average filter)
-4. The server estimates the most likely room
-5. The dashboard displays tag name, location, and confidence
+1. BLE tags periodically broadcast advertisement packets.
+2. ESP32 nodes capture signals and measure RSSI.
+3. RSSI values are consumed through MQTT and processed by the server logic.
+4. The system estimates the most likely room/location.
+5. The dashboard displays tag name, location, and confidence in real time.
 
 ---
 
 ## 🔨 Configuring environment
 
-- Edit `config/tags.csv` to define trackable tags with `id,name,base_rssi`
-- Edit `config/nodes.csv` to define nodes with `id,name,location,floor,antenna_gain`
-- Edit `config/locations.csv` to define locations with `name,floor,x,y,z,building`
-- Edit `.env` to set MQTT credentials, model path, refresh interval, and server port
+- Edit `gui/config/tags.csv` to define trackable tags with `id,name,base_rssi`.
+- Edit `gui/config/nodes.csv` to define nodes with `id,name,location,floor,antenna_gain`.
+- Edit `gui/config/locations.csv` to define locations with `name,floor,x,y,z,building`.
+- Configure environment variables for the dashboard/app (`gui/.env_example` as reference).
 
-If `config/locations.csv` does not exist, it is auto-created from `config/nodes.csv` using the node `location` and `floor` values. The default coordinates are `-9999.0` (for `x`, `y`, `z`) and default `building` is `-`.
+<!-- If `locations.csv` does not exist, it can be generated from node location/floor data depending on your app configuration. -->
 
 ---
 
 ## 🚀 Installation
 
-Clone the repository and install dependencies from the root:
+Clone the repository:
 
 ```bash
 git clone https://github.com/your-username/medtrack.git
 cd medtrack
-py -m pip install -r requirements.txt
 ```
 
-Then open `http://127.0.0.1:7860`.
+For containerized usage, ensure you have:
+
+1. Docker Engine
+2. Docker Compose (v2)
+
+Build images:
+
+```bash
+docker compose build
+```
 
 ---
 
 ## ▶️ Usage
 
-1. Deploy ESP32 nodes in fixed locations
-2. Attach BLE tags to assets
-3. Start the backend server
+1. Deploy ESP32 nodes in fixed known locations
+2. Attach BLE tags to assets 
+3. Run the live system
 4. Open the dashboard
 5. Monitor assets in real time
+
+### Run the live system (dashboard)
+
+Start broker + app:
+
+```bash
+docker compose up -d mosquitto-broker rtls-app
+```
+
+Open: `http://localhost:7860`
+
+Stop services:
+
+```bash
+docker compose down
+```
+
+### Train a model / process RSSI data
+
+Use the training service with the same arguments used locally.
+
+Example:
+
+```bash
+docker compose run --rm rtls-train Teste1 Teste1_output --train-model --model RF
+```
+
+With tag filter:
+
+```bash
+docker compose run --rm rtls-train Teste1 Teste1_output --train-model --model RF --tag airtag
+```
+
+### Replay CSV logs for demo
+
+Replay one file:
+
+```bash
+docker compose run --rm rtls-replay Teste1/log_airtag_mqtt.csv
+```
+
+Replay multiple files at 5x speed:
+
+```bash
+docker compose run --rm rtls-replay Teste1/log_airtag_mqtt.csv Teste1/log_maetek_mqtt.csv --speed 5
+```
+
+Loop continuously:
+
+```bash
+docker compose run --rm rtls-replay Teste1/log_airtag_mqtt.csv --loop
+```
 
 ---
 
@@ -82,18 +144,23 @@ Then open `http://127.0.0.1:7860`.
 The dashboard displays:
 
 * Tag name
-* Estimated room
+* Estimated room/location
 * Confidence level
+* Live updates from MQTT events
 
 ---
 
 ## 📂 Project Structure
 
-```
+```text
 medtrack/
-├── backend/
-├── dashboard/
-├── docs/
+├── demo_replay.py
+├── process_rssi_data.py
+├── docker-compose.yml
+├── gui/
+│   ├── app.py
+│   └── config/
+├── data/
 └── README.md
 ```
 
@@ -101,6 +168,19 @@ medtrack/
 
 ## 👥 Authors
 
-| [<img loading="lazy" src="https://avatars.githubusercontent.com/u/43549329?v=4" width=115><br><sub>Higor D. Oliveira</sub>](https://github.com/Rigor-do) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/136653897?v=4" width=115><br><sub>Elisa Müller</sub>](https://github.com/BeWSM) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/142459839?v=4" width=115><br><sub>Eduardo Stein Saleme </sub>](https://github.com/eduardossaleme) | 
-| :---: | :---: | :---: |
+Higor D. Oliveira,  Elisa M. Sarmento, Eduardo S. Saleme, Luis A. Souza Jr, Gustavo C. Vivas, Rodolfo S. Villaca and Andre G. C. Pacheco.
 
+This project is part of the LIFE laboratory.
+https://life.inf.ufes.br/
+Last updated 2026.03.27
+
+## 📡 Copyright
+
+The project and the tool have copyrights, but you can freely use them, as long as you suitably cite this project in your works.
+
+<!-- H. Lee, H. Chung and J. Lee, "Motion Artifact Cancellation in Wearable Photoplethysmography Using Gyroscope," in IEEE Sensors Journal.
+doi: 10.1109/JSEN.2018.2879970 -->
+
+## 📚 References:
+
+ESPresense Firmware: The core ESP32-based node software. [GitHub Repository](https://github.com/ESPresense/ESPresense)
