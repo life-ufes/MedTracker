@@ -90,7 +90,7 @@ docker compose build
 Start broker + app:
 
 ```bash
-docker compose up -d mosquitto-broker rtls-app
+docker compose up -d mosquitto-broker medtracker-app
 ```
 
 Open: `http://localhost:7860`
@@ -108,13 +108,13 @@ Use the training service with the same arguments used locally.
 Example:
 
 ```bash
-docker compose run --rm rtls-train Teste1 Teste1_output --train-model --model RF
+docker compose run --rm medtracker-train data/train models --train-model --model RF --cm-plot
 ```
 
 With tag filter:
 
 ```bash
-docker compose run --rm rtls-train Teste1 Teste1_output --train-model --model RF --tag airtag
+docker compose run --rm medtracker-train data/train data/train_output --train-model --model RF --tag airtag --cm-plot
 ```
 
 ### Replay CSV logs for demo
@@ -122,19 +122,19 @@ docker compose run --rm rtls-train Teste1 Teste1_output --train-model --model RF
 Replay one file:
 
 ```bash
-docker compose run --rm rtls-replay Teste1/log_airtag_mqtt.csv
+docker compose run --rm medtracker-replay data/demo/log_all_tags_mqtt.csv
 ```
 
 Replay multiple files at 5x speed:
 
 ```bash
-docker compose run --rm rtls-replay Teste1/log_airtag_mqtt.csv Teste1/log_maetek_mqtt.csv --speed 5
+docker compose run --rm medtracker-replay data/demo/log_all_tags_mqtt.csv data/demo/log_airtag_mqtt.csv --speed 5
 ```
 
 Loop continuously:
 
 ```bash
-docker compose run --rm rtls-replay Teste1/log_airtag_mqtt.csv --loop
+docker compose run --rm medtracker-replay data/demo/log_all_tags_mqtt.csv --loop
 ```
 
 ---
