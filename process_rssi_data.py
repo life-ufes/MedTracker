@@ -40,13 +40,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--window-seconds",
         type=int,
-        default=5,
+        default=10,
         help="Sliding window size in seconds used for median RSSI features",
     )
     parser.add_argument(
         "--stride-seconds",
         type=int,
-        default=3,
+        default=10,
         help="Stride in seconds for sliding windows",
     )
     parser.add_argument(
@@ -75,6 +75,11 @@ def parse_args() -> argparse.Namespace:
         "--no-tsne",
         action="store_true",
         help="Disable 2D t-SNE plot generation",
+    )
+    parser.add_argument(
+        "--cm-plot",
+        action="store_true",
+        help="Generate confusion matrix plots for each trained model (only if --train-model is enabled)",
     )
     parser.add_argument(
         "--tsne-perplexity",
@@ -288,6 +293,7 @@ def train_and_save_model(
     model_output_path: Path,
     cv_splits: int,
     random_state: int,
+    generate_cm_plot: bool = False,
 ) -> None:
     if processed_df.empty:
         raise ValueError("Cannot train model with empty processed dataframe.")
@@ -311,6 +317,25 @@ def train_and_save_model(
     model.fit(x, y)
     joblib.dump(model, model_output_path)
     print(f"Model saved to: {model_output_path}")
+
+    if generate_cm_plot:
+        from sklearn.metrics import ConfusionMatrixDisplay
+
+        y_pred = model.predict(x)
+        disp = ConfusionMatrixDisplay.from_predictions(
+            y,
+            y_pred,
+            display_labels=model.classes_,
+            cmap=plt.cm.Blues,
+            # normalize="true",
+        )
+        plt.xticks(rotation=45, ha='right', rotation_mode="anchor")
+        plt.title(f"{model_name} Confusion Matrix (Normalized)")
+        cm_plot_path = model_output_path.with_suffix(".png")
+        plt.tight_layout()
+        plt.savefig(cm_plot_path)
+        plt.close()
+        print(f"Confusion matrix plot saved to: {cm_plot_path}")
 
 
 def iter_log_files(input_folder: Path, tag_filter: Optional[str]) -> List[Path]:
@@ -397,6 +422,7 @@ def main() -> int:
                     model_output_path=model_output_path,
                     cv_splits=args.cv_splits,
                     random_state=args.random_state,
+                    generate_cm_plot=args.cm_plot,
                 )
             except Exception as exc:
                 print(f"Could not train model for {file_path.name}: {exc}")
