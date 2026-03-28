@@ -16,7 +16,8 @@ MedTracker is a real-time localization system for indoor localization on healthc
 The system provides a lightweight and low-cost infrastructure for monitoring medical equipment in real time.
 The project supports a **containerized workflow with Docker Compose** for running the live dashboard, training/processing RSSI data, and replaying demo MQTT logs.
 
-A demonstration video focusing on reproducing the use case is also present on [Youtube](https://youtu.be/loZT-bcbE_s).
+A demonstration video focusing on reproducing the use case is present on [Youtube](https://youtu.be/loZT-bcbE_s).
+ 
 ---
 
 ## 🏗️ Architecture
