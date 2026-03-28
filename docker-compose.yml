@@ -14,8 +14,8 @@ services:
       - "7860:7860"
     volumes:
       - ./:/app
-    # depends_on:
-    #   - mosquitto-broker
+    depends_on:
+      - mosquitto-broker
 
   medtracker-train:
     build:
@@ -24,8 +24,8 @@ services:
     entrypoint: ["python", "process_rssi_data.py"]
     volumes:
       - ./:/app
-    # depends_on:
-    #   - mosquitto-broker
+    depends_on:
+      - mosquitto-broker
 
   medtracker-replay:
     build:
@@ -37,21 +37,20 @@ services:
       - MQTT_PORT=1883
     volumes:
       - ./:/app
-    # depends_on:
-    #   - mosquitto-broker
+    depends_on:
+      - mosquitto-broker
 
-  ## If needed, you can uncomment the following section to include the MQTT broker. Make sure to adjust the configuration.
-  # mosquitto-broker:
-  #   container_name: mosquitto
-  #   image: eclipse-mosquitto:latest
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 256M
-  #   ports:
-  #     - "1883:1883"
-  #     - "9001:9001"
-  #   volumes:
-  #     - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
-  #     - ./mosquitto/data:/mosquitto/data
-  #     - ./mosquitto/log:/mosquitto/log
+  mosquitto-broker:
+    container_name: mosquitto
+    image: eclipse-mosquitto:latest
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    command: sh -c "echo 'listener 1883' > /mosquitto/config/mosquitto.conf && echo 'allow_anonymous true' >> /mosquitto/config/mosquitto.conf && /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf"
+    volumes:
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
