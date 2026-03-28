@@ -60,7 +60,7 @@ BLE Tags -> ESP32 Nodes -> MQTT Broker -> Processing -> Dashboard
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/medtrack.git
+git clone https://github.com/life-ufes/MedTracker.git
 cd medtrack
 ```
 
