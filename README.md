@@ -61,7 +61,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/life-ufes/MedTracker.git
-cd medtrack
+cd MedTracker
 ```
 
 For containerized usage, ensure you have:
